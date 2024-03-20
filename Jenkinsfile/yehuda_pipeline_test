@@ -1,0 +1,30 @@
+pipeline {
+    //// agent any
+    agent {label "yehuda-hyperv-linux06-jenkins-agent"}
+    environment {
+        My_ENV = "${ENV}"
+        My_var='yehuda'
+        My_Git='https://github.com/yehudaeshelgmail/website-php'
+    }
+    stages {
+        stage('Stage 1') {
+            steps {
+                echo 'Hello from yehuda world!'
+                echo 'Showing Env '
+                echo My_ENV
+                echo My_var
+                echo env.My_var
+                 sh 'df -k'
+                 sh 'which java'
+                 sh 'pwd'
+                 sh 'ls -la'
+                 deleteDir()
+                 sh 'ls -la'
+                 // git url : 'https://github.com/yehudaeshelgmail/website-php'
+                 git url : env.My_Git
+                 sh 'ls -la'
+                 sh 'cat select_mysql.php'
+            }
+        }
+    }
+
