@@ -52,7 +52,7 @@ pipeline
    parameters
     {
         choice (choices: ['LINUX','WIN'], name: 'ENV' , description: '')
-        choice (choices: ['icoe-NTAS102461B1O','icoe-NTAS102185B0A','icoe-sql19','icoe-LINX102083TDC'], name: 'jenkins_agent' , description: '')
+        choice (choices: ['yehuda-hyperv-linux06-jenkins-agent'], name: 'jenkins_agent' , description: '')
         string(description: '', name: 'pkuda')
         string(description: '', name: 'tagName')
     }
