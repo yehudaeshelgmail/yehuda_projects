@@ -75,8 +75,8 @@ pipeline
 
 
  // agent {label "${params.jenkins_agent}"}
-
- agent {label "${params.tagName}"}
+ agent any
+ // agent {label "${params.tagName}"}
    
   stages 
    {
