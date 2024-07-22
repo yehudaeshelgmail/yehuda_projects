@@ -1,11 +1,15 @@
+#!groovy
+import hudson.model.Result
+import groovy.json.*
 
-// link https://gist.github.com/mramanathan/b1e7e92a3953d28b3b9f856f6bb18412
+def AGENT_LABEL  = null
+// jenkins_agent = null
+// pkuda = null
 
+// Code show all Jenkins Agents
 
 import jenkins.model.*
-
 collectBuildEnv = [:]
-
 @NonCPS
 def getNodes(String label) {
     jenkins.model.Jenkins.instance.nodes.collect { thisAgent ->
@@ -16,7 +20,6 @@ def getNodes(String label) {
         }
     }
 }
-
 def dumpBuildEnv(String agentName) {
     node("${agentName}") {
         stage("Env in ${agentName}") {
@@ -25,7 +28,6 @@ def dumpBuildEnv(String agentName) {
         }
     }
 }
-
 def processTask() {
     // Replace label-string with the label name that you may have
     def nodeList = getNodes("label-string")
@@ -43,27 +45,184 @@ def processTask() {
     }
 }
 
-pipeline {
-    // I prefer to have a dedicated node to execute admin tasks
-    agent {
-        // label "admin-agent"
-        label "yehuda-hyperv-linux06-jenkins-agent"
+
+pipeline 
+  {
+                                      
+   parameters
+    {
+        choice (choices: ['LINUX','WIN'], name: 'ENV' , description: '')
+        choice (choices: ['icoe-NTAS102461B1O','icoe-NTAS102185B0A','icoe-sql19','icoe-LINX102083TDC'], name: 'jenkins_agent' , description: '')
+        string(description: '', name: 'pkuda')
+        string(description: '', name: 'tagName')
     }
-        
-    options {
-        timestamps()
+
+    //options
+    //{
+    //    checkoutTosubirectory('${BUILD_ID}_${JOB_BASE_NAME}_${BUILD_TIMESTAMP}')
+    //    timestamps()
+    //}
+   
+   environment 
+    {
+      PIPELINE_TYPE          = ""
+      GIT_AUTH_ID            = "0a606b8a-7133-4378-9386-59de6bab1742"
+      jenkins_agent          = "${params.jenkins_agent}"
+      pkuda                  = "${params.pkuda}"
+      tagName                = "${params.tagName}"
+      ENV                    = "${params.ENV}"
     }
-        
-    stages {
-        stage('agents-tasks') {
+
+
+ // agent {label "${params.jenkins_agent}"}
+ 
+ agent {label "${params.tagName}"}
+   
+  stages 
+   {
+ 
+    stage('agents-tasks')
+     {
             
-            steps {
-                script {
-                    processTask()
+        steps {
+            script {
+                processTask()
       
-                    parallel collectBuildEnv
-                }
+                parallel collectBuildEnv
             }
         }
-    }
-}
+     }
+    stage('Initialize variables') 
+     {
+        steps {   
+            script {
+                deleteDir()
+                checkout scm
+                echo "pkuda  :  ${pkuda}"  
+                echo "ENV    :  ${ENV}"
+                echo "tgName :  ${tagName}"  
+            }
+        }
+     }
+   
+   // end of  stage
+   
+    stage('LINUX') 
+     {
+      when {
+          expression { return ENV == 'LINUX' }
+           }
+      steps
+       {
+        script
+         {
+          
+           // https://stackoverflow.com/questions/22917491/reading-file-from-workspace-in-jenkins-with-groovy-script
+           // https://www.jenkins.io/doc/pipeline/steps/workflow-basic-steps/
+ 
+  
+           env.WORKSPACE = pwd()
+           echo "Showing Jenkins WORKSPACE Via Pipeline : ${env.WORKSPACE}"
+           // def filePath = readFile "${env.WORKSPACE}/run_nmon/run_nmon_final.conf"
+           // println(filePath)
+           // def lines = filePath.readLines() 
+           // for (line in lines) {                                            
+           //    echo "Showing line : $line"
+           //                    }
+    
+            def statusCode = sh  encoding: 'UTF-8', returnStatus: true, script: 
+               """
+                #!/bin/bash
+           
+                echo  "Showing HOSTNAME : " \$HOSTNAME
+				echo  "ENV  : " \$ENV
+                taric=`date +%Y%m%d%H%M`
+                echo  "taric : " \$taric
+                echo  "Showing pkuda : " \$pkuda
+                \$pkuda
+                
+                jenkins_workspace=`pwd`
+                echo  "Showing jenkins_workspace via shell : " \$jenkins_workspace
+                ls -la
+                
+                # #############################
+                # Backup jenkins workspace
+                # ############################
+                Target_Folder=/tmp/yehuda
+                mkdir -p \$Target_Folder
+                rm -rf \$Target_Folder
+                mkdir -p \$Target_Folder
+                cp -Rp \$jenkins_workspace* \$Target_Folder
+                echo  "Showing jenkins_workspace"
+                ls -la \$jenkins_workspace
+                echo  "Showing Target_Folder"
+                ls -la \$Target_Folder
+ 
+                """ 
+         }
+       }
+     }
+
+    // end of  stage
+    
+    stage('WIN') 
+     {
+       when {
+             expression { return ENV == 'WIN' }
+            }
+      steps
+       {
+        script
+         {
+          
+           // https://stackoverflow.com/questions/22917491/reading-file-from-workspace-in-jenkins-with-groovy-script
+           // https://www.jenkins.io/doc/pipeline/steps/workflow-basic-steps/
+          
+           env.WORKSPACE = pwd()
+           echo "Showing Jenkins WORKSPACE Via Pipeline : ${env.WORKSPACE}"
+           // def filePath = readFile "${env.WORKSPACE}/run_nmon/run_nmon_final.conf"
+           // println(filePath)
+           // def lines = filePath.readLines() 
+           // for (line in lines) {                                            
+           //    echo "Showing line : $line"
+           //                    }
+    
+            def statusCode = powershell encoding: 'UTF-8', returnStatus: true, script:
+                """
+  
+                echo  "Showing pkuda : " $pkuda
+                $pkuda
+            
+  				# #############################
+                # Backup jenkins workspace
+                # ############################
+                \$jenkins_workspace= "\$PWD" 
+                echo  'Showing jenkins_workspace via shell : ' "\$jenkins_workspace"  
+                echo  "Going to Backup  jenkins_workspace "
+                \$Target_Folder = 'D:\\yehuda\\Backup\\Jenkins'
+
+				if (Test-Path -Path \$Target_Folder)
+                {
+  				  "Path exists!"
+                  rm  -r -fo \$Target_Folder
+				} 
+                else 
+                {
+ 				   "Path doesn't exist."
+				}
+                mkdir \$Target_Folder
+                xcopy "\$jenkins_workspace"   \$Target_Folder /S /E /Y
+      
+                """ 
+
+         }
+       }
+     }
+ 
+ // end of  stage
+ 
+ }    
+ 
+ // end of  stages
+
+ }
