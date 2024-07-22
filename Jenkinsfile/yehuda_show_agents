@@ -75,7 +75,11 @@ pipeline
 
 
  // agent {label "${params.jenkins_agent}"}
- 
+ if (${params.jenkins_agent} = null) 
+          {
+            ${params.jenkins_agent}='yehuda-hyperv-linux06-jenkins-agent'
+	   echo  "showing params.jenkins_agent : " \${params.tagName}
+          }
  agent {label "${params.tagName}"}
    
   stages 
@@ -135,7 +139,7 @@ pipeline
                 #!/bin/bash
            
                 echo  "Showing HOSTNAME : " \$HOSTNAME
-				echo  "ENV  : " \$ENV
+		echo  "ENV  : " \$ENV
                 taric=`date +%Y%m%d%H%M`
                 echo  "taric : " \$taric
                 echo  "Showing pkuda : " \$pkuda
