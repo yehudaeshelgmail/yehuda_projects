@@ -4,7 +4,7 @@ import groovy.json.*
 
 def AGENT_LABEL  = null
 // jenkins_agent = null
-pkuda = "hostname"
+// pkuda = "hostname"
 
 // Code show all Jenkins Agents
 
