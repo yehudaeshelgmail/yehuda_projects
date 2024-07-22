@@ -75,10 +75,10 @@ pipeline
 
 
  // agent {label "${params.jenkins_agent}"}
- if (${params.jenkins_agent} = null) 
+ if ( ${params.tagName} = null) 
           {
-            ${params.jenkins_agent}='yehuda-hyperv-linux06-jenkins-agent'
-	   echo  "showing params.jenkins_agent : " \${params.tagName}
+            ${params.tagName}='yehuda-hyperv-linux06-jenkins-agent'
+	    echo  "showing params.tagName : " \${params.tagName}
           }
  agent {label "${params.tagName}"}
    
