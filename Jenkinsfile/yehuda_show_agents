@@ -78,7 +78,7 @@ pipeline
  // if ( ${params.tagName} = null ) 
  if ( tagName != null ) 
           {
-            ${params.tagName}='yehuda-hyperv-linux06-jenkins-agent'
+            tagName='yehuda-hyperv-linux06-jenkins-agent'
 	    // echo  "showing params.tagName : " \${params.tagName}
           }
  agent {label "${params.tagName}"}
