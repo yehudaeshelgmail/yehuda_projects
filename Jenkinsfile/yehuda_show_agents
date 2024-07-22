@@ -1,31 +1,68 @@
-pipeline {
-    //// agent any
-    agent {label "yehuda-hyperv-linux06-jenkins-agent"}
-    environment {
-        My_ENV = "${ENV}"
-        My_var='yehuda'
-        My_Git='https://github.com/yehudaeshelgmail/website-php'
+
+// link https://gist.github.com/mramanathan/b1e7e92a3953d28b3b9f856f6bb18412
+
+
+import jenkins.model.*
+
+collectBuildEnv = [:]
+
+@NonCPS
+def getNodes(String label) {
+    jenkins.model.Jenkins.instance.nodes.collect { thisAgent ->
+        if (thisAgent.labelString.contains("${label}")) {
+        // this works too
+        // if (thisAagent.labelString == "${label}") {
+            return thisAgent.name
+        }
     }
-    stages {
-        stage('Stage 1') {
-            steps {
-                echo 'Hello from yehuda world!'
-                echo 'Showing Env '
-                echo My_ENV
-                echo My_var
-                echo env.My_var
-                 sh 'df -k'
-                 sh 'which java'
-                 sh 'pwd'
-                 sh 'ls -la'
-                 deleteDir()
-                 sh 'ls -la'
-                 // git url : 'https://github.com/yehudaeshelgmail/website-php'
-                 git url : env.My_Git
-                 sh 'ls -la'
-                 sh 'cat select_mysql.php'
+}
+
+def dumpBuildEnv(String agentName) {
+    node("${agentName}") {
+        stage("Env in ${agentName}") {
+            echo "running on agent, ${agentName}"
+            sh 'printenv'
+        }
+    }
+}
+
+def processTask() {
+    // Replace label-string with the label name that you may have
+    def nodeList = getNodes("label-string")
+    
+    for(i=0; i<nodeList.size(); i++) {
+        def agentName = nodeList[i]
+        
+        // skip the null entries in the nodeList
+        if (agentName != null) {
+            println "Prearing task for " + agentName
+            collectBuildEnv["node_" + agentName] = {
+                dumpBuildEnv(agentName)
             }
         }
     }
+}
 
+pipeline {
+    // I prefer to have a dedicated node to execute admin tasks
+    agent {
+        label "admin-agent"
+    }
+        
+    options {
+        timestamps()
+    }
+        
+    stages {
+        stage('agents-tasks') {
+            
+            steps {
+                script {
+                    processTask()
+      
+                    parallel collectBuildEnv
+                }
+            }
+        }
+    }
 }
