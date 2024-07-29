@@ -12,6 +12,7 @@ import jenkins.model.*
 collectBuildEnv = [:]
 @NonCPS
 def getNodes(String label) {
+    echo "running  getNodes"
     jenkins.model.Jenkins.instance.nodes.collect { thisAgent ->
         if (thisAgent.labelString.contains("${label}")) {
         // this works too
@@ -21,6 +22,7 @@ def getNodes(String label) {
     }
 }
 def dumpBuildEnv(String agentName) {
+    echo "running dumpBuildEnv"
     node("${agentName}") {
         stage("Env in ${agentName}") {
             echo "running on agent, ${agentName}"
@@ -32,6 +34,7 @@ def processTask() {
     // Replace label-string with the label name that you may have
     // def nodeList = getNodes("label-string")
     def nodeList = getNodes("yehuda-hyperv-linux06-jenkins-agent")
+    echo "running processTask"
 
  
     for(i=0; i<nodeList.size(); i++) {
