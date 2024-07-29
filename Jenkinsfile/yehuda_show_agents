@@ -12,16 +12,16 @@ import jenkins.model.*
 collectBuildEnv = [:]
 @NonCPS
 
-def jenkins = Jenkins.instance
-def computers = jenkins.computers
-computers.each {
-   println "${it.displayName} ${it.hostName}"
-}
+// def jenkins = Jenkins.instance
+// def computers = jenkins.computers
+// computers.each {
+//   println "${it.displayName} ${it.hostName}"
+//  }
 
-def labels = jenkins.getLabels()
-labels.each {
-   println "${it.displayName}"
-}
+// def labels = jenkins.getLabels()
+// labels.each {
+//   println "${it.displayName}"
+// }
 
 
 def getNodes(String label) {
