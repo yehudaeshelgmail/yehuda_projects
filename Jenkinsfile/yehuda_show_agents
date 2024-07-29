@@ -39,7 +39,7 @@ def processTask() {
  
     for(i=0; i<nodeList.size(); i++) {
         def agentName = nodeList[i]
-        echo "show node, agentName"
+        println "Prearing task for " + agentName
         
         // skip the null entries in the nodeList
         if (agentName != null) {
