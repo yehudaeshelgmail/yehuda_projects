@@ -11,6 +11,19 @@ def AGENT_LABEL  = null
 import jenkins.model.*
 collectBuildEnv = [:]
 @NonCPS
+
+def jenkins = Jenkins.instance
+def computers = jenkins.computers
+computers.each {
+   println "${it.displayName} ${it.hostName}"
+}
+
+def labels = jenkins.getLabels()
+labels.each {
+   println "${it.displayName}"
+}
+
+
 def getNodes(String label) {
     echo "running  getNodes"
     jenkins.model.Jenkins.instance.nodes.collect { thisAgent ->
