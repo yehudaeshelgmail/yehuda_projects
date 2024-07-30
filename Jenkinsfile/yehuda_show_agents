@@ -56,9 +56,9 @@ def processTask() {
         
         // skip the null entries in the nodeList
         if (agentName != null) {
-            println "Prearing task for " + agentName
+            println "Preparing task for " + agentName
             collectBuildEnv["node_" + agentName] = {
-                dumpBuildEnv(agentName)
+                // dumpBuildEnv(agentName)
             }
         }
     }
