@@ -4,28 +4,15 @@ import groovy.json.*
 
 def AGENT_LABEL  = null
 // jenkins_agent = null
-// pkuda = "hostname"
+// pkuda = null
 
 // Code show all Jenkins Agents
 
 import jenkins.model.*
 collectBuildEnv = [:]
 @NonCPS
-
-// def jenkins = Jenkins.instance
-// def computers = jenkins.computers
-// computers.each {
-//   println "${it.displayName} ${it.hostName}"
-//  }
-
-// def labels = jenkins.getLabels()
-// labels.each {
-//   println "${it.displayName}"
-// }
-
-
 def getNodes(String label) {
-    echo "running  getNodes"
+    echo "Running getNodes"
     jenkins.model.Jenkins.instance.nodes.collect { thisAgent ->
         if (thisAgent.labelString.contains("${label}")) {
         // this works too
@@ -35,7 +22,7 @@ def getNodes(String label) {
     }
 }
 def dumpBuildEnv(String agentName) {
-    echo "running dumpBuildEnv"
+    echo "Running dumpBuildEnv"
     node("${agentName}") {
         stage("Env in ${agentName}") {
             echo "running on agent, ${agentName}"
@@ -44,25 +31,47 @@ def dumpBuildEnv(String agentName) {
     }
 }
 def processTask() {
+    echo "Running processTask"
     // Replace label-string with the label name that you may have
     // def nodeList = getNodes("label-string")
-    def nodeList = getNodes("yehuda")
-    echo "running processTask"
+    nodeList = getNodes("icoe")
+    // echo "going to print nodeList"  
+    // println(nodeList)
 
- 
+    
     for(i=0; i<nodeList.size(); i++) {
         def agentName = nodeList[i]
-        println "Prearing task for " + agentName
         
         // skip the null entries in the nodeList
         if (agentName != null) {
-            println "Preparing task for " + agentName
+            // println "Preparing task for " + agentName
             collectBuildEnv["node_" + agentName] = {
                 // dumpBuildEnv(agentName)
             }
         }
     }
 }
+
+node("icoe-sql19")
+  {
+          script {
+               echo 'Create Node List...'
+    		   checkout scm
+               // pipelineParams     = readProperties file: "env/appList.properties"
+               // def data = readFile(file: 'env/appList.properties')
+               // println(data)
+               // ech "${pipelineParams}"
+    
+               // def lstApp = bat (returnStdout: true, script: "dir  $WORKSPACE")
+   
+               echo "starting processTask "  
+               processTask()
+               // echo "going to print nodeList"  
+              // println(nodeList)
+              
+                 }
+
+  }
 
 
 pipeline 
@@ -71,7 +80,8 @@ pipeline
    parameters
     {
         choice (choices: ['LINUX','WIN'], name: 'ENV' , description: '')
-        choice (choices: ['yehuda-hyperv-linux06-jenkins-agent'], name: 'jenkins_agent' , description: '')
+        // choice (choices: ['icoe-NTAS102461B1O','icoe-NTAS102185B0A','icoe-sql19','icoe-LINX102083TDC'], name: 'jenkins_agent' , description: '')
+        choice (choices: nodeList , name: 'jenkins_agent' , description: '')
         string(description: '', name: 'pkuda')
         string(description: '', name: 'tagName')
     }
@@ -93,10 +103,13 @@ pipeline
     }
 
 
- // agent {label "${params.jenkins_agent}"}
- agent any
+ agent {label "${params.jenkins_agent}"}
+ 
  // agent {label "${params.tagName}"}
-   
+ 
+ // agent any
+ 
+    
   stages 
    {
  
@@ -105,9 +118,9 @@ pipeline
             
         steps {
             script {
-                processTask()
-      
-                parallel collectBuildEnv
+                 echo "pkuda  :  ${pkuda}"  
+                // processTask()
+                // parallel collectBuildEnv
             }
         }
      }
@@ -154,7 +167,7 @@ pipeline
                 #!/bin/bash
            
                 echo  "Showing HOSTNAME : " \$HOSTNAME
-		echo  "ENV  : " \$ENV
+				echo  "ENV  : " \$ENV
                 taric=`date +%Y%m%d%H%M`
                 echo  "taric : " \$taric
                 echo  "Showing pkuda : " \$pkuda
